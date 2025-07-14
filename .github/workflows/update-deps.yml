@@ -1,0 +1,56 @@
+name: Dependency Update
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake git libudev-dev pkg-config clang libclang-dev
+
+    - name: Install cargo-edit
+      uses: taiki-e/install-action@cargo-edit
+
+    - name: Update dependencies
+      run: |
+        cargo update
+        cargo upgrade --workspace
+
+    - name: Test updated dependencies
+      run: |
+        cargo build
+        cargo test --lib
+        cargo test --doc
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: 'chore: update dependencies'
+        body: |
+          This PR updates the project dependencies to their latest versions.
+          
+          Changes made:
+          - Updated `Cargo.lock` with latest compatible versions
+          - Updated `Cargo.toml` with latest semantic versions
+          
+          All tests pass with the updated dependencies.
+        branch: update-dependencies
+        delete-branch: true

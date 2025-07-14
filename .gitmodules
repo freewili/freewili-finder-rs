@@ -1,0 +1,3 @@
+[submodule "freewili-finder"]
+	path = freewili-finder
+	url = https://github.com/freewili/freewili-finder.git

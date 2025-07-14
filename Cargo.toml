@@ -1,0 +1,21 @@
+[package]
+name = "freewili-finder-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Rust bindings for the FreeWili Finder C/C++ library"
+license = "MIT"
+repository = "https://github.com/yourusername/freewili-finder-rs"
+keywords = ["freewili", "usb", "device", "discovery", "hardware"]
+categories = ["hardware-support", "api-bindings"]
+
+[dependencies]
+thiserror = "2.0.12"
+
+[build-dependencies]
+bindgen = "0.72.0"
+cmake = "0.1.54"
+
+[[example]]
+name = "list_all"
+path = "examples/list_all.rs"
