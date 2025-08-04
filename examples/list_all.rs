@@ -1,4 +1,4 @@
-use freewili_finder_rs::{FreeWiliDevice, FreeWiliError};
+use freewili_finder_rs::{fw_stringtype_type, FreeWiliDevice, FreeWiliError};
 
 fn main() -> Result<(), FreeWiliError> {
     // Find all FreeWili devices
@@ -10,7 +10,12 @@ fn main() -> Result<(), FreeWiliError> {
             println!("{}. Invalid device", device_index + 1);
             continue;
         }
-        println!("{}. {}", device_index + 1, device);
+        println!(
+            "{}. {} (Device Type: {})",
+            device_index + 1,
+            device,
+            device.get_device_string(fw_stringtype_type)?
+        );
 
         // Get USB devices
         match device.get_usb_devices() {

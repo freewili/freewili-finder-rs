@@ -236,6 +236,35 @@ impl From<ffi::_fw_usbdevicetype_t> for UsbDeviceType {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeviceType {
+    /// USB Hub (parent device)
+    Unknown,
+    /// Generic Serial Port device
+    Freewili,
+    /// Main CPU Serial Port
+    Defcon2024Badge,
+    /// Display CPU Serial Port
+    Defcon2025FwBadge,
+    /// Mass Storage Device (e.g., SD card, flash drive)
+    Uf2,
+    /// ESP32 USB device (JTAG/RTT)
+    Winky,
+}
+
+impl From<ffi::_fw_devicetype_t> for DeviceType {
+    fn from(device_type: ffi::_fw_devicetype_t) -> Self {
+        match device_type {
+            ffi::_fw_devicetype_t::fw_devicetype_unknown => DeviceType::Unknown,
+            ffi::_fw_devicetype_t::fw_devicetype_freewili => DeviceType::Freewili,
+            ffi::_fw_devicetype_t::fw_devicetype_defcon2024badge => DeviceType::Defcon2024Badge,
+            ffi::_fw_devicetype_t::fw_devicetype_defcon2025fwbadge => DeviceType::Defcon2025FwBadge,
+            ffi::_fw_devicetype_t::fw_devicetype_uf2 => DeviceType::Uf2,
+            ffi::_fw_devicetype_t::fw_devicetype_winky => DeviceType::Winky,
+        }
+    }
+}
+
 /// Information about a USB device connected to a FreeWili device.
 ///
 /// This structure contains comprehensive information about a USB device,
