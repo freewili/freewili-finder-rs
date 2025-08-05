@@ -7,6 +7,7 @@ fn main() {
     config
         .define("CMAKE_BUILD_TYPE", "Release")
         .define("FW_BUILD_C_API", "ON")
+        .define("FW_BUILD_STATIC", "ON")
         .define("FW_FINDER_BUILD_TESTS", "OFF")
         .define("FW_FINDER_ENABLE_BINDINGS_PYTHON", "OFF")
         .define("FW_BUILD_EXAMPLES", "OFF");
@@ -25,10 +26,10 @@ fn main() {
         config.build_target("all");
     }
 
-    // On non-Windows, just build the specific target
+    // On non-Windows, build the static targets
     #[cfg(not(target_os = "windows"))]
     {
-        config.build_target("cfwfinder");
+        config.build_target("cfwfinder-static");
     }
 
     let dst = config.build();
@@ -41,6 +42,16 @@ fn main() {
     let lib_path = dst.join("build/c_api");
 
     println!("cargo:rustc-link-search=native={}", lib_path.display());
+
+    // Add the main build directory for fwfinder-static
+    #[cfg(not(target_os = "windows"))]
+    {
+        let main_build_path = dst.join("build");
+        println!(
+            "cargo:rustc-link-search=native={}",
+            main_build_path.display()
+        );
+    }
 
     // Additional Windows-specific library paths
     #[cfg(target_os = "windows")]
@@ -59,12 +70,18 @@ fn main() {
     #[cfg(not(target_os = "windows"))]
     println!("cargo:rustc-link-arg=-Wl,-rpath,{}", lib_path.display());
 
-    // Tell cargo to link the freewili-finder C API library
+    // Tell cargo to link the freewili-finder C API library statically
     #[cfg(target_os = "windows")]
-    println!("cargo:rustc-link-lib=dylib=cfwfinder");
+    {
+        println!("cargo:rustc-link-lib=static=cfwfinder-static");
+        println!("cargo:rustc-link-lib=static=fwfinder-static");
+    }
 
     #[cfg(not(target_os = "windows"))]
-    println!("cargo:rustc-link-lib=dylib=cfwfinder");
+    {
+        println!("cargo:rustc-link-lib=static=cfwfinder-static");
+        println!("cargo:rustc-link-lib=static=fwfinder-static");
+    }
 
     // Link platform-specific system libraries
     #[cfg(target_os = "windows")]
@@ -72,17 +89,22 @@ fn main() {
         println!("cargo:rustc-link-lib=setupapi");
         println!("cargo:rustc-link-lib=cfgmgr32");
         println!("cargo:rustc-link-lib=user32");
+        println!("cargo:rustc-link-lib=ole32");
     }
 
     #[cfg(target_os = "linux")]
     {
         println!("cargo:rustc-link-lib=udev");
+        // Link C++ standard library for static C++ libraries
+        println!("cargo:rustc-link-lib=stdc++");
     }
 
     #[cfg(target_os = "macos")]
     {
         println!("cargo:rustc-link-lib=framework=IOKit");
         println!("cargo:rustc-link-lib=framework=Foundation");
+        // Link C++ standard library for static C++ libraries
+        println!("cargo:rustc-link-lib=c++");
     }
 
     // The bindgen::Builder is the main entry point
@@ -126,44 +148,6 @@ fn main() {
     // Tell cargo to rerun if freewili-finder changes
     println!("cargo:rerun-if-changed=freewili-finder");
 
-    // Copy DLLs to target directory on Windows so they can be found at runtime
-    #[cfg(target_os = "windows")]
-    {
-        let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
-        let target_dir =
-            PathBuf::from(env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_string()));
-        let dll_dest_dir = target_dir.join(&profile);
-        let deps_dest_dir = dll_dest_dir.join("deps");
-
-        let dll_source_dir = dst.join("build/bin");
-        if dll_source_dir.exists() {
-            for entry in std::fs::read_dir(&dll_source_dir).unwrap() {
-                let entry = entry.unwrap();
-                let path = entry.path();
-                if path.extension().is_some_and(|ext| ext == "dll") {
-                    let filename = path.file_name().unwrap();
-
-                    // Copy to main target directory
-                    let dest_path = dll_dest_dir.join(filename);
-                    let _ = std::fs::copy(&path, &dest_path);
-                    println!(
-                        "cargo:warning=Copied {} to {}",
-                        path.display(),
-                        dest_path.display()
-                    );
-
-                    // Also copy to deps directory for doctests
-                    if deps_dest_dir.exists() {
-                        let deps_dest_path = deps_dest_dir.join(filename);
-                        let _ = std::fs::copy(&path, &deps_dest_path);
-                        println!(
-                            "cargo:warning=Copied {} to {}",
-                            path.display(),
-                            deps_dest_path.display()
-                        );
-                    }
-                }
-            }
-        }
-    }
+    // Note: With static linking, no DLL copying is needed!
+    // The library is embedded directly in the executable.
 }
