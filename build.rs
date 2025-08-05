@@ -130,18 +130,38 @@ fn main() {
     #[cfg(target_os = "windows")]
     {
         let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
-        let target_dir = PathBuf::from(env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_string()));
+        let target_dir =
+            PathBuf::from(env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_string()));
         let dll_dest_dir = target_dir.join(&profile);
-        
+        let deps_dest_dir = dll_dest_dir.join("deps");
+
         let dll_source_dir = dst.join("build/bin");
         if dll_source_dir.exists() {
             for entry in std::fs::read_dir(&dll_source_dir).unwrap() {
                 let entry = entry.unwrap();
                 let path = entry.path();
-                if path.extension().map_or(false, |ext| ext == "dll") {
-                    let dest_path = dll_dest_dir.join(path.file_name().unwrap());
+                if path.extension().is_some_and(|ext| ext == "dll") {
+                    let filename = path.file_name().unwrap();
+
+                    // Copy to main target directory
+                    let dest_path = dll_dest_dir.join(filename);
                     let _ = std::fs::copy(&path, &dest_path);
-                    println!("cargo:warning=Copied {} to {}", path.display(), dest_path.display());
+                    println!(
+                        "cargo:warning=Copied {} to {}",
+                        path.display(),
+                        dest_path.display()
+                    );
+
+                    // Also copy to deps directory for doctests
+                    if deps_dest_dir.exists() {
+                        let deps_dest_path = deps_dest_dir.join(filename);
+                        let _ = std::fs::copy(&path, &deps_dest_path);
+                        println!(
+                            "cargo:warning=Copied {} to {}",
+                            path.display(),
+                            deps_dest_path.display()
+                        );
+                    }
                 }
             }
         }
