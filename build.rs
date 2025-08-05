@@ -35,7 +35,7 @@ fn main() {
 
     // Add the library search path - adjust for Windows vs Unix
     #[cfg(target_os = "windows")]
-    let lib_path = dst.join("build");
+    let lib_path = dst.join("build/lib");
 
     #[cfg(not(target_os = "windows"))]
     let lib_path = dst.join("build/c_api");
@@ -45,6 +45,8 @@ fn main() {
     // Additional Windows-specific library paths
     #[cfg(target_os = "windows")]
     {
+        let build_path = dst.join("build");
+        println!("cargo:rustc-link-search=native={}", build_path.display());
         let c_api_path = dst.join("build/c_api");
         println!("cargo:rustc-link-search=native={}", c_api_path.display());
         let release_path = dst.join("build/Release");
@@ -123,4 +125,25 @@ fn main() {
 
     // Tell cargo to rerun if freewili-finder changes
     println!("cargo:rerun-if-changed=freewili-finder");
+
+    // Copy DLLs to target directory on Windows so they can be found at runtime
+    #[cfg(target_os = "windows")]
+    {
+        let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
+        let target_dir = PathBuf::from(env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_string()));
+        let dll_dest_dir = target_dir.join(&profile);
+        
+        let dll_source_dir = dst.join("build/bin");
+        if dll_source_dir.exists() {
+            for entry in std::fs::read_dir(&dll_source_dir).unwrap() {
+                let entry = entry.unwrap();
+                let path = entry.path();
+                if path.extension().map_or(false, |ext| ext == "dll") {
+                    let dest_path = dll_dest_dir.join(path.file_name().unwrap());
+                    let _ = std::fs::copy(&path, &dest_path);
+                    println!("cargo:warning=Copied {} to {}", path.display(), dest_path.display());
+                }
+            }
+        }
+    }
 }
