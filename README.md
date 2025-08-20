@@ -1,35 +1,25 @@
 # FreeWili Finder - Rust Bindings
 
-Safe Rust bindings for discovering and interfacing with FreeWili devices. This library provides a simple, memory-safe API to find FreeWili devices and enumerate their USB components.
+<div align="center">
+  <img src="https://raw.githubusercontent.com/freewili/freewili-finder-rs/master/images/freewili.png" alt="FreeWili" width="400">
+</div>
 
-## Features
-
-- **Static Linking**: No runtime dependencies - everything is embedded in your executable
-- **Zero Setup**: Just add to Cargo.toml and it works - no DLLs or external libraries needed
-- **Cross-Platform**: Supports Windows, macOS, and Linux
-- **Device Discovery**: Find all connected FreeWili devices automatically
-- **USB Enumeration**: List all USB devices associated with each FreeWili
-- **Type Safety**: Strongly-typed device classification system
-- **Memory Safe**: Safe Rust wrappers around the underlying C library
+Safe Rust bindings for [freewili-finder](https://github.com/freewili/freewili-finder) discovering and interfacing with FreeWili devices. This library provides a simple, memory-safe API to find FreeWili devices and enumerate their USB components.
 
 ## Installation
 
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-freewili-finder-rs = "0.2.1"
-```
-
-That's it! The library automatically builds and statically links the underlying C++ library - no additional setup required.
+`cargo add freewili-finder-rs`
 
 ### Prerequisites
 
 You need build tools for compiling the C++ library:
 
-- **Windows**: Visual Studio 2022 with C++ tools, CMake
-- **Linux**: `build-essential cmake libudev-dev clang`
-- **macOS**: Xcode command line tools, CMake
+- CMake 3.20 or later
+- C++23 compatible compiler (GCC 11+, Clang 14+, MSVC 2022+)
+- Platform dependencies:
+    - Linux: libudev-dev
+    - macOS: Xcode command line tools
+    - Windows: Windows SDK (SetupAPI, Cfgmgr32)
 
 ## Quick Start
 
@@ -62,70 +52,24 @@ fn main() -> Result<(), FreeWiliError> {
 
 ## Examples
 
-Find serial ports:
-
-```rust
-use freewili_finder_rs::{FreeWiliDevice, UsbDeviceType};
-
-fn find_serial_ports() -> Result<Vec<String>, freewili_finder_rs::FreeWiliError> {
-    let devices = FreeWiliDevice::find_all()?;
-    let mut ports = Vec::new();
-    
-    for device in devices {
-        let usb_devices = device.get_usb_devices()?;
-        for usb_device in usb_devices {
-            if matches!(usb_device.kind, 
-                UsbDeviceType::SerialMain | 
-                UsbDeviceType::SerialDisplay |
-                UsbDeviceType::Ftdi
-            ) {
-                if let Some(port) = usb_device.port {
-                    ports.push(port);
-                }
-            }
-        }
-    }
-    
-    Ok(ports)
-}
-```
-
 Run the included example:
 
 ```bash
 cargo run --example list_all
 ```
 
-## API Overview
-
-### Main Types
-
-- **`FreeWiliDevice`** - Handle to a FreeWili device
-- **`UsbDevice`** - Information about a USB device
-- **`UsbDeviceType`** - Enum for device types (SerialMain, SerialDisplay, Ftdi, MassStorage, etc.)
-
-### Key Methods
-
-```rust
-// Find all devices
-FreeWiliDevice::find_all() -> Result<Vec<FreeWiliDevice>, FreeWiliError>
-
-// Check if device is valid
-device.is_valid() -> bool
-
-// Get USB devices
-device.get_usb_devices() -> Result<Vec<UsbDevice>, FreeWiliError>
-
-// Get device info
-device.get_device_string(string_type) -> Result<String, FreeWiliError>
 ```
-
-## Static Linking Benefits
-
-✅ **No runtime dependencies** - Single executable with everything embedded  
-✅ **Easy deployment** - Just ship your executable  
-✅ **No DLL hell** - No missing library issues  
-✅ **Works everywhere** - No need to install additional packages  
+Found 3 FreeWili(s)
+1. DEFCON25 v72 (USB Composite Device) 29614E37FB9CD753 (Device Type: DefCon2025FwBadge)
+        1. Main: DEFCON25 v72 (USB Composite Device): COM91
+2. RP2350 Boot (USB Mass Storage Device) A&2037E964&0&0000 (Device Type: UF2)
+        1. Storage: RP2350 Boot (USB Mass Storage Device): F:\
+3. FreeWili (USB Serial Converter) FW4849 (Device Type: FreeWili)
+        1. Hub:  (Generic USB Hub):
+        2. Storage: RP2 Boot (USB Composite Device): D:\
+        3. Display: DisplayCPU v55 (USB Composite Device): COM46
+        4. FPGA: FreeWili (USB Serial Converter): COM51
+```
 
 ## Error Handling
 
@@ -137,14 +81,6 @@ match FreeWiliDevice::find_all() {
     Err(e) => eprintln!("Error: {}", e),
 }
 ```
-
-## Platform Support
-
-| Platform | Status | System Libraries |
-|----------|--------|------------------|
-| Windows  | ✅     | SetupAPI, Cfgmgr32 |
-| Linux    | ✅     | libudev |
-| macOS    | ✅     | IOKit framework |
 
 ## License
 
