@@ -1,4 +1,4 @@
-use freewili_finder_rs::{fw_stringtype_type, FreeWiliDevice, FreeWiliError};
+use freewili_finder_rs::{FreeWiliDevice, FreeWiliError, fw_stringtype_type};
 
 fn main() -> Result<(), FreeWiliError> {
     // Find all FreeWili devices

@@ -54,7 +54,7 @@ pub mod ffi;
 
 use ffi::fw_error_t;
 use ffi::fw_freewili_device_t;
-use std::ffi::{c_char, CStr};
+use std::ffi::{CStr, c_char};
 use std::fmt;
 use std::ptr;
 use thiserror::Error;
@@ -688,10 +688,11 @@ impl FreeWiliDevice {
             if !path.is_empty() {
                 paths.push(path);
             }
-        } else if let Ok(raw_path) = self.get_usb_device_string(fw_stringtype_raw) {
-            if !raw_path.is_empty() && !paths.contains(&raw_path) {
-                paths.push(raw_path);
-            }
+        } else if let Ok(raw_path) = self.get_usb_device_string(fw_stringtype_raw)
+            && !raw_path.is_empty()
+            && !paths.contains(&raw_path)
+        {
+            paths.push(raw_path);
         }
         let paths = if paths.is_empty() { None } else { Some(paths) };
 
