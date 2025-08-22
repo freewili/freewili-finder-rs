@@ -4,13 +4,19 @@ use std::path::PathBuf;
 
 fn main() {
     let mut config = Config::new("freewili-finder");
+    let profile = std::env::var("PROFILE").unwrap();
+    let cmake_profile = match profile.as_str() {
+        "debug" => "Debug",
+        "release" => "Release",
+        _ => panic!("Couldn't match cargo PROFILE string: {profile}"),
+    };
     config
-        .define("CMAKE_BUILD_TYPE", "Release")
         .define("FW_BUILD_C_API", "ON")
         .define("FW_BUILD_STATIC", "ON")
         .define("FW_FINDER_BUILD_TESTS", "OFF")
         .define("FW_FINDER_ENABLE_BINDINGS_PYTHON", "OFF")
-        .define("FW_BUILD_EXAMPLES", "OFF");
+        .define("FW_BUILD_EXAMPLES", "OFF")
+        .profile(cmake_profile);
 
     // Use Ninja generator on Windows for faster builds
     #[cfg(target_os = "windows")]
