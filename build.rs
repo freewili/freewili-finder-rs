@@ -133,13 +133,16 @@ fn main() {
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .derive_default(true)
         .derive_debug(true)
-        .derive_partialeq(true)
         .derive_copy(true)
+        // Don't derive PartialEq globally to avoid function pointer comparison issues
+        .derive_partialeq(false)
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         })
         .default_alias_style(bindgen::AliasVariation::TypeAlias)
         .generate_cstr(true)
+        // Add allow attribute for function pointer comparisons at the module level
+        .module_raw_line("", "#![allow(unpredictable_function_pointer_comparisons)]")
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.

@@ -12,9 +12,9 @@ use std::fmt;
 use std::ptr;
 use thiserror::Error;
 
+use ffi::_fw_devicetype_t::*;
 use ffi::_fw_inttype_t::*;
 use ffi::_fw_stringtype_t::*;
-use ffi::_fw_devicetype_t::*;
 
 use crate::ffi::fw_stringtype_t;
 
@@ -61,18 +61,27 @@ impl From<fw_error_t> for FreeWiliError {
     fn from(error_code: fw_error_t) -> Self {
         match error_code {
             x if x == ffi::_fw_error_t::fw_error_success as u32 => FreeWiliError::None,
-            x if x == ffi::_fw_error_t::fw_error_invalid_parameter as u32 => FreeWiliError::InvalidParameter,
-            x if x == ffi::_fw_error_t::fw_error_invalid_device as u32 => FreeWiliError::InvalidDevice,
-            x if x == ffi::_fw_error_t::fw_error_internal_error as u32 => FreeWiliError::InternalError(None),
+            x if x == ffi::_fw_error_t::fw_error_invalid_parameter as u32 => {
+                FreeWiliError::InvalidParameter
+            }
+            x if x == ffi::_fw_error_t::fw_error_invalid_device as u32 => {
+                FreeWiliError::InvalidDevice
+            }
+            x if x == ffi::_fw_error_t::fw_error_internal_error as u32 => {
+                FreeWiliError::InternalError(None)
+            }
             x if x == ffi::_fw_error_t::fw_error_memory as u32 => FreeWiliError::MemoryError,
-            x if x == ffi::_fw_error_t::fw_error_no_more_devices as u32 => FreeWiliError::NoMoreDevices,
+            x if x == ffi::_fw_error_t::fw_error_no_more_devices as u32 => {
+                FreeWiliError::NoMoreDevices
+            }
             x if x == ffi::_fw_error_t::fw_error_none as u32 => FreeWiliError::None,
-            x if x == ffi::_fw_error_t::fw_error__maxvalue as u32 => FreeWiliError::InternalError(None),
+            x if x == ffi::_fw_error_t::fw_error__maxvalue as u32 => {
+                FreeWiliError::InternalError(None)
+            }
             _ => FreeWiliError::InternalError(Some(format!("Unknown error code: {}", error_code))),
         }
     }
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UsbDeviceType {
@@ -118,14 +127,28 @@ impl From<ffi::fw_usbdevicetype_t> for UsbDeviceType {
     fn from(device_type: ffi::fw_usbdevicetype_t) -> Self {
         match device_type {
             x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_hub as u32 => UsbDeviceType::Hub,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_serial as u32 => UsbDeviceType::Serial,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_serialmain as u32 => UsbDeviceType::SerialMain,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_serialdisplay as u32 => UsbDeviceType::SerialDisplay,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_massstorage as u32 => UsbDeviceType::MassStorage,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_esp32 as u32 => UsbDeviceType::Esp32,
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_serial as u32 => {
+                UsbDeviceType::Serial
+            }
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_serialmain as u32 => {
+                UsbDeviceType::SerialMain
+            }
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_serialdisplay as u32 => {
+                UsbDeviceType::SerialDisplay
+            }
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_massstorage as u32 => {
+                UsbDeviceType::MassStorage
+            }
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_esp32 as u32 => {
+                UsbDeviceType::Esp32
+            }
             x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_ftdi as u32 => UsbDeviceType::Ftdi,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_other as u32 => UsbDeviceType::Other,
-            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype__maxvalue as u32 => UsbDeviceType::_MaxValue,
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype_other as u32 => {
+                UsbDeviceType::Other
+            }
+            x if x == ffi::_fw_usbdevicetype_t::fw_usbdevicetype__maxvalue as u32 => {
+                UsbDeviceType::_MaxValue
+            }
             _ => UsbDeviceType::Other, // Default fallback
         }
     }
@@ -165,8 +188,12 @@ impl From<ffi::fw_devicetype_t> for DeviceType {
         match device_type {
             x if x == ffi::_fw_devicetype_t::fw_devicetype_unknown as u32 => DeviceType::Unknown,
             x if x == ffi::_fw_devicetype_t::fw_devicetype_freewili as u32 => DeviceType::Freewili,
-            x if x == ffi::_fw_devicetype_t::fw_devicetype_defcon2024badge as u32 => DeviceType::Defcon2024Badge,
-            x if x == ffi::_fw_devicetype_t::fw_devicetype_defcon2025fwbadge as u32 => DeviceType::Defcon2025FwBadge,
+            x if x == ffi::_fw_devicetype_t::fw_devicetype_defcon2024badge as u32 => {
+                DeviceType::Defcon2024Badge
+            }
+            x if x == ffi::_fw_devicetype_t::fw_devicetype_defcon2025fwbadge as u32 => {
+                DeviceType::Defcon2025FwBadge
+            }
             x if x == ffi::_fw_devicetype_t::fw_devicetype_uf2 as u32 => DeviceType::Uf2,
             x if x == ffi::_fw_devicetype_t::fw_devicetype_winky as u32 => DeviceType::Winky,
             _ => DeviceType::Unknown, // Default fallback
@@ -200,11 +227,12 @@ pub struct USBDevice {
 
 impl USBDevice {
     /// # Safety
-    /// 
+    ///
     /// The `device` pointer must be a valid pointer to a `fw_freewili_device_t` that is properly initialized
     /// and has not been freed. The caller must ensure the device remains valid for the duration of this call.
     pub unsafe fn from_device(device: *mut ffi::fw_freewili_device_t) -> Result<Self> {
-        let mut usb_device_type: ffi::fw_usbdevicetype_t = fw_devicetype_unknown as ffi::fw_usbdevicetype_t;
+        let mut usb_device_type: ffi::fw_usbdevicetype_t =
+            fw_devicetype_unknown as ffi::fw_usbdevicetype_t;
         let res = unsafe { ffi::fw_usb_device_get_type(device, &mut usb_device_type) };
         if res != ffi::_fw_error_t::fw_error_success as ffi::fw_error_t {
             return Err(res.into());
@@ -474,10 +502,7 @@ impl FreeWiliDevice {
         Ok(cstr.to_string_lossy().into_owned())
     }
 
-    fn get_device_string(
-        &self,
-        string_type: ffi::_fw_stringtype_t,
-    ) -> Result<String> {
+    fn get_device_string(&self, string_type: ffi::_fw_stringtype_t) -> Result<String> {
         let mut buffer = vec![0u8; 1024];
         let mut buffer_size = buffer.len() as u32;
 
@@ -524,10 +549,7 @@ impl FreeWiliDevice {
         Ok(is_standalone)
     }
 
-    pub fn usb_device_get_string(
-        &self,
-        string_type: ffi::_fw_stringtype_t,
-    ) -> Result<String> {
+    pub fn usb_device_get_string(&self, string_type: ffi::_fw_stringtype_t) -> Result<String> {
         let mut buffer = vec![0u8; 1024];
         let mut buffer_size = buffer.len() as u32;
 
@@ -572,15 +594,16 @@ impl FreeWiliDevice {
         let res = unsafe {
             ffi::fw_usb_device_set(
                 self.handle,
-                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_main as ffi::fw_usbdevice_iter_set_t,
+                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_main
+                    as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
                 &mut error_size,
             )
         };
         if res == ffi::_fw_error_t::fw_error_internal_error as fw_error_t {
             let error_str = unsafe { CStr::from_ptr(error_msg.as_ptr() as *const c_char) }
-                    .to_string_lossy()
-                    .into_owned();
+                .to_string_lossy()
+                .into_owned();
             return Err(FreeWiliError::InternalError(Some(error_str)));
         }
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
@@ -595,15 +618,16 @@ impl FreeWiliDevice {
         let res = unsafe {
             ffi::fw_usb_device_set(
                 self.handle,
-                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_display as ffi::fw_usbdevice_iter_set_t,
+                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_display
+                    as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
                 &mut error_size,
             )
         };
         if res == ffi::_fw_error_t::fw_error_internal_error as fw_error_t {
             let error_str = unsafe { CStr::from_ptr(error_msg.as_ptr() as *const c_char) }
-                    .to_string_lossy()
-                    .into_owned();
+                .to_string_lossy()
+                .into_owned();
             return Err(FreeWiliError::InternalError(Some(error_str)));
         }
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
@@ -618,15 +642,16 @@ impl FreeWiliDevice {
         let res = unsafe {
             ffi::fw_usb_device_set(
                 self.handle,
-                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_fpga as ffi::fw_usbdevice_iter_set_t,
+                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_fpga
+                    as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
                 &mut error_size,
             )
         };
         if res == ffi::_fw_error_t::fw_error_internal_error as fw_error_t {
             let error_str = unsafe { CStr::from_ptr(error_msg.as_ptr() as *const c_char) }
-                    .to_string_lossy()
-                    .into_owned();
+                .to_string_lossy()
+                .into_owned();
             return Err(FreeWiliError::InternalError(Some(error_str)));
         }
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
@@ -641,15 +666,16 @@ impl FreeWiliDevice {
         let res = unsafe {
             ffi::fw_usb_device_set(
                 self.handle,
-                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_hub as ffi::fw_usbdevice_iter_set_t,
+                ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_hub
+                    as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
                 &mut error_size,
             )
         };
         if res == ffi::_fw_error_t::fw_error_internal_error as fw_error_t {
             let error_str = unsafe { CStr::from_ptr(error_msg.as_ptr() as *const c_char) }
-                    .to_string_lossy()
-                    .into_owned();
+                .to_string_lossy()
+                .into_owned();
             return Err(FreeWiliError::InternalError(Some(error_str)));
         }
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
@@ -661,7 +687,12 @@ impl FreeWiliDevice {
 
 impl fmt::Display for FreeWiliDevice {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {}", self.name().unwrap_or_default(), self.serial().unwrap_or_default())
+        write!(
+            f,
+            "{} {}",
+            self.name().unwrap_or_default(),
+            self.serial().unwrap_or_default()
+        )
     }
 }
 

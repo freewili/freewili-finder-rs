@@ -58,6 +58,24 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug test_port_chain example",
+            "cargo": {
+                "args": [
+                    "run",
+                    "--example=test_port_chain",
+                    "--package=freewili-finder-rs"
+                ],
+                "filter": {
+                    "name": "test_port_chain",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

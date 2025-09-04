@@ -1,6 +1,6 @@
 [package]
 name = "freewili-finder-rs"
-version = "0.3.1"
+version = "0.4.2"
 edition = "2024"
 authors = ["David Rebbe <drebbe@intrepidcs.com>"]
 description = "Rust bindings for the FreeWili Finder C/C++ library"
@@ -13,9 +13,13 @@ categories = ["hardware-support", "api-bindings"]
 thiserror = "2.0.16"
 
 [build-dependencies]
-bindgen = "0.72.0"
+bindgen = "0.72.1"
 cmake = "0.1.54"
 
 [[example]]
 name = "list_all"
 path = "examples/list_all.rs"
+
+[[example]]
+name = "test_port_chain"
+path = "examples/test_port_chain.rs"

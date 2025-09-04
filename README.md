@@ -16,7 +16,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-freewili-finder-rs = "0.3.1"
+freewili-finder-rs = "0.4.2"
 ```
 
 Or use cargo:
