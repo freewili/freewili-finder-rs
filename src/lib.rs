@@ -9,7 +9,7 @@ use ffi::fw_error_t;
 use ffi::fw_freewili_device_t;
 use std::ffi::{CStr, c_char};
 use std::fmt;
-use std::ptr;
+use std::rc::Rc;
 use thiserror::Error;
 
 use ffi::_fw_devicetype_t::*;
@@ -78,7 +78,7 @@ impl From<fw_error_t> for FreeWiliError {
             x if x == ffi::_fw_error_t::fw_error__maxvalue as u32 => {
                 FreeWiliError::InternalError(None)
             }
-            _ => FreeWiliError::InternalError(Some(format!("Unknown error code: {}", error_code))),
+            _ => FreeWiliError::InternalError(Some(format!("Unknown error code: {error_code}"))),
         }
     }
 }
@@ -413,24 +413,30 @@ impl fmt::Display for USBDevice {
 #[derive(Debug, Clone)]
 pub struct FreeWiliDevice {
     /// Raw handle to the C library device structure
-    pub handle: *mut fw_freewili_device_t,
+    handle: Rc<FreeWiliDeviceHandle>,
+}
+
+#[derive(Debug)]
+struct FreeWiliDeviceHandle {
+    ptr: *mut fw_freewili_device_t,
+}
+
+impl Drop for FreeWiliDeviceHandle {
+    fn drop(&mut self) {
+        let _res: ffi::fw_error_t = unsafe { ffi::fw_device_free(&mut self.ptr, 1) };
+        if _res != ffi::_fw_error_t::fw_error_success as u32 {
+            eprintln!("Failed to free FreeWili device handle: {_res:?}");
+        }
+    }
 }
 
 impl Default for FreeWiliDevice {
     fn default() -> Self {
         FreeWiliDevice {
-            handle: ptr::null_mut(),
+            handle: Rc::new(FreeWiliDeviceHandle {
+                ptr: std::ptr::null_mut(),
+            }),
         }
-    }
-}
-
-impl Drop for FreeWiliDevice {
-    fn drop(&mut self) {
-        let _res: ffi::fw_error_t = unsafe { ffi::fw_device_free(&mut self.handle, 1) };
-        if _res != ffi::_fw_error_t::fw_error_success as u32 {
-            eprintln!("Failed to free FreeWili device handle: {_res:?}");
-        }
-        self.handle = ptr::null_mut();
     }
 }
 
@@ -466,7 +472,9 @@ impl FreeWiliDevice {
         let mut device_handles = Vec::with_capacity(device_count as usize);
         for i in 0..device_count {
             device_handles.push(FreeWiliDevice {
-                handle: devices[i as usize],
+                handle: Rc::new(FreeWiliDeviceHandle {
+                    ptr: devices[i as usize],
+                }),
             });
         }
         Ok(device_handles)
@@ -474,7 +482,7 @@ impl FreeWiliDevice {
 
     pub fn device_type(&self) -> Result<DeviceType> {
         let mut device_type: ffi::fw_devicetype_t = 0;
-        let res = unsafe { ffi::fw_device_get_type(self.handle, &mut device_type) };
+        let res = unsafe { ffi::fw_device_get_type(self.handle.ptr, &mut device_type) };
         if res != ffi::_fw_error_t::fw_error_success as u32 {
             return Err(res.into());
         }
@@ -508,7 +516,7 @@ impl FreeWiliDevice {
 
         let res: fw_error_t = unsafe {
             ffi::fw_device_get_str(
-                self.handle,
+                self.handle.ptr,
                 string_type as u32,
                 buffer.as_mut_ptr() as *mut c_char,
                 &mut buffer_size,
@@ -532,7 +540,7 @@ impl FreeWiliDevice {
 
     pub fn unique_id(&self) -> Result<u64> {
         let mut unique_id: u64 = 0;
-        let res = unsafe { ffi::fw_device_unique_id(self.handle, &mut unique_id as *mut u64) };
+        let res = unsafe { ffi::fw_device_unique_id(self.handle.ptr, &mut unique_id as *mut u64) };
         if res != ffi::_fw_error_t::fw_error_success as u32 {
             return Err(res.into());
         }
@@ -541,8 +549,9 @@ impl FreeWiliDevice {
 
     pub fn standalone(&self) -> Result<bool> {
         let mut is_standalone: bool = false;
-        let res =
-            unsafe { ffi::fw_device_is_standalone(self.handle, &mut is_standalone as *mut bool) };
+        let res = unsafe {
+            ffi::fw_device_is_standalone(self.handle.ptr, &mut is_standalone as *mut bool)
+        };
         if res != ffi::_fw_error_t::fw_error_success as u32 {
             return Err(res.into());
         }
@@ -555,7 +564,7 @@ impl FreeWiliDevice {
 
         let res: fw_error_t = unsafe {
             ffi::fw_usb_device_get_str(
-                self.handle,
+                self.handle.ptr,
                 string_type as u32,
                 buffer.as_mut_ptr() as *mut c_char,
                 &mut buffer_size,
@@ -570,17 +579,17 @@ impl FreeWiliDevice {
     }
 
     pub fn get_usb_devices(&self) -> Result<Vec<USBDevice>> {
-        let res = unsafe { ffi::fw_usb_device_begin(self.handle) };
+        let res = unsafe { ffi::fw_usb_device_begin(self.handle.ptr) };
         if res != ffi::_fw_error_t::fw_error_success as u32 {
             return Err(res.into());
         }
 
         let mut devices = Vec::new();
         loop {
-            let usb_device = unsafe { USBDevice::from_device(self.handle)? };
+            let usb_device = unsafe { USBDevice::from_device(self.handle.ptr)? };
             devices.push(usb_device);
 
-            let res = unsafe { ffi::fw_usb_device_next(self.handle) };
+            let res = unsafe { ffi::fw_usb_device_next(self.handle.ptr) };
             if res != ffi::_fw_error_t::fw_error_success as u32 {
                 break;
             }
@@ -593,7 +602,7 @@ impl FreeWiliDevice {
         let mut error_size: u32 = error_msg.len() as u32;
         let res = unsafe {
             ffi::fw_usb_device_set(
-                self.handle,
+                self.handle.ptr,
                 ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_main
                     as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
@@ -609,7 +618,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        unsafe { USBDevice::from_device(self.handle) }
+        unsafe { USBDevice::from_device(self.handle.ptr) }
     }
 
     pub fn get_display_usb_device(&self) -> Result<USBDevice> {
@@ -617,7 +626,7 @@ impl FreeWiliDevice {
         let mut error_size: u32 = error_msg.len() as u32;
         let res = unsafe {
             ffi::fw_usb_device_set(
-                self.handle,
+                self.handle.ptr,
                 ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_display
                     as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
@@ -633,7 +642,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        unsafe { USBDevice::from_device(self.handle) }
+        unsafe { USBDevice::from_device(self.handle.ptr) }
     }
 
     pub fn get_fpga_usb_device(&self) -> Result<USBDevice> {
@@ -641,7 +650,7 @@ impl FreeWiliDevice {
         let mut error_size: u32 = error_msg.len() as u32;
         let res = unsafe {
             ffi::fw_usb_device_set(
-                self.handle,
+                self.handle.ptr,
                 ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_fpga
                     as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
@@ -657,7 +666,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        unsafe { USBDevice::from_device(self.handle) }
+        unsafe { USBDevice::from_device(self.handle.ptr) }
     }
 
     pub fn get_hub_usb_device(&self) -> Result<USBDevice> {
@@ -665,7 +674,7 @@ impl FreeWiliDevice {
         let mut error_size: u32 = error_msg.len() as u32;
         let res = unsafe {
             ffi::fw_usb_device_set(
-                self.handle,
+                self.handle.ptr,
                 ffi::_fw_usbdevice_iter_set_t::fw_usbdevice_iter_hub
                     as ffi::fw_usbdevice_iter_set_t,
                 error_msg.as_mut_ptr() as *mut i8,
@@ -681,7 +690,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        unsafe { USBDevice::from_device(self.handle) }
+        unsafe { USBDevice::from_device(self.handle.ptr) }
     }
 }
 
@@ -762,6 +771,28 @@ mod tests {
                 println!("\tNo HUB USB device found");
             }
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_copy() -> Result<()> {
+        let devices = FreeWiliDevice::find_all()?;
+
+        if devices.is_empty() {
+            println!("No devices found, skipping handle copy test.");
+            return Ok(());
+        }
+
+        let mut device = &devices[0];
+
+        device.device_type()?;
+
+        let devices = FreeWiliDevice::find_all()?;
+
+        device = &devices[0];
+
+        device.device_type()?;
 
         Ok(())
     }
