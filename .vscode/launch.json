@@ -7,7 +7,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug list_all example in library 'freewili_finder_rs'",
+            "name": "Debug list_all example",
             "cargo": {
                 "args": [
                     "run",
@@ -25,7 +25,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'freewili_finder_rs'",
+            "name": "Debug unit tests",
             "cargo": {
                 "args": [
                     "test",
@@ -44,276 +44,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'advanced_usage'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=advanced_usage",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "advanced_usage",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'advanced_usage'",
+            "name": "Run unit tests",
             "cargo": {
                 "args": [
                     "test",
-                    "--no-run",
-                    "--example=advanced_usage",
+                    "--lib",
                     "--package=freewili-finder-rs"
                 ],
                 "filter": {
-                    "name": "advanced_usage",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'basic_find'",
-            "cargo": {
-                "args": [
-                    "run",
-                    "--example=basic_find",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "basic_find",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'basic_find'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--example=basic_find",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "basic_find",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'basic_usage'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=basic_usage",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "basic_usage",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'basic_usage'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--example=basic_usage",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "basic_usage",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'find_devices'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=find_devices",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "find_devices",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'find_devices'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--example=find_devices",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "find_devices",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'serial_ports'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=serial_ports",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "serial_ports",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'serial_ports'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--example=serial_ports",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "serial_ports",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'simple_list'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=simple_list",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "simple_list",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'simple_list'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--example=simple_list",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "simple_list",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'test'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=test",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "test",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in example 'test'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--example=test",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "test",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug integration test 'integration_tests'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--test=integration_tests",
-                    "--package=freewili-finder-rs"
-                ],
-                "filter": {
-                    "name": "integration_tests",
-                    "kind": "test"
+                    "name": "freewili_finder_rs",
+                    "kind": "lib"
                 }
             },
             "args": [],
