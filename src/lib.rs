@@ -199,7 +199,11 @@ pub struct USBDevice {
 }
 
 impl USBDevice {
-    pub fn from_device(device: *mut ffi::fw_freewili_device_t) -> Result<Self> {
+    /// # Safety
+    /// 
+    /// The `device` pointer must be a valid pointer to a `fw_freewili_device_t` that is properly initialized
+    /// and has not been freed. The caller must ensure the device remains valid for the duration of this call.
+    pub unsafe fn from_device(device: *mut ffi::fw_freewili_device_t) -> Result<Self> {
         let mut usb_device_type: ffi::fw_usbdevicetype_t = fw_devicetype_unknown as ffi::fw_usbdevicetype_t;
         let res = unsafe { ffi::fw_usb_device_get_type(device, &mut usb_device_type) };
         if res != ffi::_fw_error_t::fw_error_success as ffi::fw_error_t {
@@ -551,7 +555,7 @@ impl FreeWiliDevice {
 
         let mut devices = Vec::new();
         loop {
-            let usb_device = USBDevice::from_device(self.handle)?;
+            let usb_device = unsafe { USBDevice::from_device(self.handle)? };
             devices.push(usb_device);
 
             let res = unsafe { ffi::fw_usb_device_next(self.handle) };
@@ -582,7 +586,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        Ok(USBDevice::from_device(self.handle)?)
+        unsafe { USBDevice::from_device(self.handle) }
     }
 
     pub fn get_display_usb_device(&self) -> Result<USBDevice> {
@@ -605,7 +609,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        Ok(USBDevice::from_device(self.handle)?)
+        unsafe { USBDevice::from_device(self.handle) }
     }
 
     pub fn get_fpga_usb_device(&self) -> Result<USBDevice> {
@@ -628,7 +632,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        Ok(USBDevice::from_device(self.handle)?)
+        unsafe { USBDevice::from_device(self.handle) }
     }
 
     pub fn get_hub_usb_device(&self) -> Result<USBDevice> {
@@ -651,7 +655,7 @@ impl FreeWiliDevice {
         if res != ffi::_fw_error_t::fw_error_success as fw_error_t {
             return Err(res.into());
         }
-        Ok(USBDevice::from_device(self.handle)?)
+        unsafe { USBDevice::from_device(self.handle) }
     }
 }
 
